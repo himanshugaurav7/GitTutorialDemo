@@ -1,0 +1,349 @@
+movies-details.component.css
+
+label {
+    display: block;
+    margin-top: 10px;
+  }
+  
+  .card-container.card {
+    max-width: 400px !important;
+    padding: 40px 40px;
+  }
+  
+  .card {
+    background-color: #f7f7f7;
+    padding: 20px 25px 30px;
+    margin: 0 auto 25px;
+    margin-top: 50px;
+    -moz-border-radius: 2px;
+    -webkit-border-radius: 2px;
+    border-radius: 2px;
+    -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+  }
+  
+
+------------------------
+movies-details.component.html
+
+
+<html class="bg-container">
+<div *ngIf="status" class="col-md-12">
+    <div class="card card-container  bdrop">
+        <ul>
+            <p><b>Movie Name : </b>{{movie.key.movieName}}</p>
+            <p><b>Movie Theatre : </b>{{movie.key.theatreName}}</p>
+            <p><b>Total Seats : </b>{{totalSeats}}</p>
+            <p><b>Seats Available : </b>{{movie.totalNoOfTickets}}</p>
+            <p><b>Seats Booked : </b>{{output}}</p>
+        </ul>
+        <a routerLink="/movieslist">Back</a>
+    </div>
+    
+</div>
+</html>
+
+
+
+-----------------
+
+movies-details.component.spec.ts
+
+
+
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { of } from 'rxjs';
+import { MoviesService } from '../movies.service';
+
+import { MoviesDetailsComponent } from './movies-details.component';
+
+describe('MoviesDetailsComponent', () => {
+  let component: MoviesDetailsComponent;
+  let fixture: ComponentFixture<MoviesDetailsComponent>;
+  let service: MoviesService
+  let router: Router
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [ MoviesDetailsComponent ],
+      imports: [HttpClientTestingModule, RouterTestingModule.withRoutes([])],
+      providers:[MoviesDetailsComponent]
+    })
+    .compileComponents();
+  });
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(MoviesDetailsComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    component = TestBed.inject(MoviesDetailsComponent)
+    service = TestBed.inject(MoviesService)
+    router = TestBed.inject(Router)
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+  describe('movie detail',()=>{
+    it('movie details',()=>{
+      component.movieDetails();
+      spyOn(service,'movieDetails').and.returnValue(of(5))
+      service.movieDetails('RRR','PVR').subscribe(data=>{
+        expect(data).toEqual(5)
+      })
+    })
+  })
+});
+
+
+--------------------------
+
+movies-details.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { BackendService } from '../backend.service';
+import { MoviesService } from '../movies.service';
+
+@Component({
+  selector: 'app-movies-details',
+  templateUrl: './movies-details.component.html',
+  styleUrls: ['./movies-details.component.css']
+})
+export class MoviesDetailsComponent implements OnInit {
+
+  totalSeats:number=0
+  output!:number
+  constructor(private service:MoviesService, private aservice:BackendService) { }
+  movie=this.service.movie
+  status:boolean=this.aservice.adminStatus
+  ngOnInit(): void {
+    this.movieDetails();
+  }
+  movieDetails(){
+    this.service.movieDetails(this.movie.key.movieName,this.movie.key.theatreName).subscribe(data=>{
+      this.output=data
+      this.totalSeats=this.output+this.movie.totalNoOfTickets
+    })
+      
+  }
+
+}
+
+
+-------------------
+
+movieslist.component.html
+
+
+            <div class="input-group">
+                <div class="form-outline">
+                  <input type="search" class="form-control" [(ngModel)]="name" placeholder="Search Movie"/>
+                </div>
+                <button type="button" class="btn btn-primary" (click)="getMovie()">
+                  <i class="fa fa-search"></i>
+                </button>
+              </div>
+<table class = "table table-striped">
+    <thead>
+        <tr>
+            <th>Movie Name</th>
+            <th>Theatre Name </th>
+            <th>Tickets Available</th>   
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor= "let movie of movies |paginate:{
+            itemsPerPage: tableSize,
+            currentPage:page};" >
+            <td> {{ movie.key.movieName }} </td>
+            <td> {{ movie.key.theatreName }} </td>
+            <td>{{ movie.totalNoOfTickets}}</td>
+            <td><button class="btn btn-primary" (click)="bookTicket(movie)">Book</button>
+                <button *ngIf="status" class="btn btn-danger" (click)="deleteMovie(movie.key.movieName,movie.key.theatreName)">Delete</button>
+                <button *ngIf="status" class="btn btn-primary" (click)="movieDetails(movie)">Details</button></td>
+            
+    </tr>
+    </tbody>
+</table>
+<div>
+
+    <pagination-controls
+        previousLabel="Prev"
+        nextLabel="Next"
+        (pageChange)="onTableDataChange($event)">
+    </pagination-controls>   
+</div>
+<!-- <mat-paginator #paginator [pageSizeOptions]="[2, 4, 6]" 
+showFirstLastButtons></mat-paginator> -->
+
+
+
+
+-------------------------
+
+
+movieslist.component.spec.ts
+
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { NgModule } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+import { of } from 'rxjs';
+import { LoginComponent } from '../login/login.component';
+import { MoviesService } from '../movies.service';
+import { NgxPaginationModule } from 'ngx-pagination';
+
+import { MovieslistComponent } from './movieslist.component';
+
+describe('MovieslistComponent', () => {
+  let component: MovieslistComponent;
+  let fixture: ComponentFixture<MovieslistComponent>;
+  let service: MoviesService
+  let router: Router
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      declarations: [ MovieslistComponent ],
+      imports: [HttpClientTestingModule, RouterTestingModule.withRoutes([]),NgxPaginationModule],
+      providers:[MovieslistComponent]
+    })
+    .compileComponents();
+  });
+
+  beforeEach(() => {
+    fixture = TestBed.createComponent(MovieslistComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    component = TestBed.inject(MovieslistComponent)
+    service = TestBed.inject(MoviesService)
+    router = TestBed.inject(Router)
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+  describe('movies list',()=>{
+    it('get movies list',()=>{
+      const movies =[{key:{movieName:'RRR',theatreName:"PVR"},totalNoOfTickets:250},
+      {key:{movieName:'Avenger',theatreName:"PVR"},totalNoOfTickets:350}];
+      component.getMoviesList();
+      spyOn(service,'getAllMovies').and.returnValue(of(movies));
+      service.getAllMovies().subscribe(data=>{
+        expect(data).toEqual(movies)
+      })
+      
+    })
+    it('get movie',()=>{
+        component.getMovie();
+      })
+      it('get movie',()=>{
+        component.name='RRR'
+        component.getMovie();
+        const navigateSpy = spyOn(router, 'navigate')
+      component.getMovie()
+      expect(navigateSpy).toHaveBeenCalledWith(['search']);
+      })
+    it('book ticket',()=>{
+      const movie ={key:{movieName:'RRR',theatreName:"PVR"},totalNoOfTickets:250};
+      component.bookTicket(movie);
+      const navigateSpy = spyOn(router, 'navigate')
+      component.bookTicket(movie)
+      expect(navigateSpy).toHaveBeenCalledWith(['bookticket']);
+    })
+
+    it('delete movie',()=>{
+      const msg='Movie Deleted Successfully'
+      let response=''
+      component.deleteMovie('RRR','PVR');
+      spyOn(service,'deleteMovie').and.returnValue(of(msg));
+      service.deleteMovie('RRR','PVR').subscribe(data=>{
+        response= data
+      })
+      expect(response).toEqual(msg)
+    })
+    it('movie details',()=>{
+      const movie ={key:{movieName:'RRR',theatreName:"PVR"},totalNoOfTickets:250};
+      component.movieDetails(movie);
+      const navigateSpy = spyOn(router, 'navigate')
+      component.movieDetails(movie)
+      expect(navigateSpy).toHaveBeenCalledWith(['moviedetails']);
+
+    })
+
+    it('change',()=>{
+      component.onTableDataChange('')
+    })
+  })
+});
+
+
+-------------------------
+
+movieslist.component.ts
+
+import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { BackendService } from '../backend.service';
+import { Movies } from '../Movies';
+import { MoviesService } from '../movies.service';
+
+@Component({
+  selector: 'app-movieslist',
+  templateUrl: './movieslist.component.html',
+  styleUrls: ['./movieslist.component.css']
+})
+export class MovieslistComponent implements OnInit {
+  message!:string
+  name:string=''
+  page: number=1;
+  tableSize:number=10;
+  movies:Movies[]=[];
+  constructor(private service:MoviesService, private route:Router, private aservice: BackendService) { }
+
+  status:boolean=this.aservice.adminStatus
+  getMoviesList(){
+    this.service.getAllMovies().subscribe(data=>{
+      this.movies=data
+    })
+  }
+
+  getMovie(){
+    console.log(this.name)
+    if(this.name==''){
+      alert("Please Enter movie name")
+    }
+    else{
+      this.service.movieName=this.name
+      this.route.navigate(['search'])
+    }
+
+  }
+  onTableDataChange(event:any){
+    this.page=event;
+    this.getMoviesList();
+  }
+  bookTicket(movie:Movies){
+    this.service.movie=movie
+    this.route.navigate(['bookticket'])
+  }
+
+  deleteMovie(movieName:string, theatreName:string){
+    this.service.deleteMovie(movieName,theatreName).subscribe(data=>{
+      this.message=data
+      alert(data)
+      this.aservice.adminStatus=true
+      this.getMoviesList()
+    })
+  }
+  movieDetails(movie:Movies){
+    this.service.movie=movie
+    this.route.navigate(['moviedetails'])
+  }
+  ngOnInit(): void {
+    this.getMoviesList();
+  }
+
+}
