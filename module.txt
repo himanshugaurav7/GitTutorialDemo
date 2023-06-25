@@ -1,0 +1,717 @@
+app-routing.module.ts
+
+import { Component, NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { AuthguardService } from './authguard.service';
+import { ForgotpasswordComponent } from './forgotpassword/forgotpassword.component';
+import { LoginComponent } from './login/login.component';
+import { MoviesDetailsComponent } from './movies-details/movies-details.component';
+import { MovieslistComponent } from './movieslist/movieslist.component';
+import { RegisteruserComponent } from './registeruser/registeruser.component';
+import { SearchMovieComponent } from './search-movie/search-movie.component';
+import { TicketBookingComponent } from './ticket-booking/ticket-booking.component';
+
+const routes: Routes = [{path:'',component:LoginComponent},
+{path:'register', component:RegisteruserComponent},
+{path:'movieslist', component: MovieslistComponent, canActivate: [AuthguardService]},
+{path :'forgotpassword',component:ForgotpasswordComponent},
+{path:'search', component:SearchMovieComponent,canActivate: [AuthguardService]},
+{path:'bookticket', component:TicketBookingComponent,canActivate: [AuthguardService]},
+{path:'moviedetails',component:MoviesDetailsComponent,canActivate: [AuthguardService]}];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+
+
+------------------
+app.component.css
+
+
+.bg-container {
+    background-image: url("/assets/poster.jpg");
+    width:100%;
+    height:100%; 
+    border:5px solid red;
+    box-sizing:content-box
+  }
+  .navbar-nav {
+    margin-left:1200px;
+}
+
+
+-----------------
+app.component.html
+
+<div class="header">
+    <div class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="col-lg-6 col-md-6 col-xs-6 col-sm-6">
+  
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <h2 class="navbar-brand">
+            Movie Booking App
+          </h2>
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a *ngIf ="status" class="nav-link" routerLink="/" (click)="logout()">Logout</a>
+            </li>
+          </ul>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+<router-outlet>
+</router-outlet>
+<div class="bg-blue py-4 footer">
+    <div class="row "> <small class="fottext">Copyright &copy; 2023. All rights reserved.</small>
+        <div class="social-contact ml-4 ml-sm-auto">
+          <span class="fa fa-facebook mr-4 text-sm"></span>
+          <span class="fa fa-google-plus mr-4 text-sm"></span>
+          <span class="fa fa-linkedin mr-4 text-sm"></span> 
+          <span class="fa fa-twitter mr-4 mr-sm-5 text-sm"></span> 
+      </div>
+    </div>
+</div>
+
+
+-----------------------
+app.component.spec.ts
+
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TestBed, ComponentFixture } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { of } from 'rxjs';
+import { AppComponent } from './app.component';
+
+describe('AppComponent', () => {
+  let component=AppComponent.prototype;
+  let fixture: ComponentFixture<AppComponent>;
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [
+        RouterTestingModule,
+        HttpClientTestingModule
+      ],
+      declarations: [
+        AppComponent
+      ],
+      providers:[AppComponent]
+    }).compileComponents();
+  });
+  beforeEach(()=>{
+    fixture = TestBed.createComponent(AppComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    component=TestBed.inject(AppComponent)
+  })
+
+  it('should create the app', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    expect(app).toBeTruthy();
+  });
+
+  it(`should have as title 'moviebookingapp'`, () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.componentInstance;
+    expect(app.title).toEqual('moviebookingapp');
+  });
+
+  it('should render title', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    fixture.detectChanges();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.querySelector('.content span')?.textContent).toContain('moviebookingapp app is running!');
+  });
+  describe('logout',()=>{
+  it('should check logout',()=>{
+    component.logout()
+  })
+})
+  
+});
+
+
+-------------------
+app.component.ts
+
+import { Component } from '@angular/core';
+import { BackendService } from './backend.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  title = 'moviebookingapp';
+  status:boolean=false
+  constructor( private service:BackendService){}
+  
+  logout(){
+    this.service.status=false
+    this.service.adminStatus=false
+    this.status=false
+  }
+}
+
+------------------
+app.module.ts
+
+import { HttpClientModule } from '@angular/common/http';
+import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { BrowserModule } from '@angular/platform-browser';
+
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+import { LoginComponent } from './login/login.component';
+import { RegisteruserComponent } from './registeruser/registeruser.component';
+import { MovieslistComponent } from './movieslist/movieslist.component';
+import { ForgotpasswordComponent } from './forgotpassword/forgotpassword.component';
+import { NgxPaginationModule } from 'ngx-pagination';
+import { SearchMovieComponent } from './search-movie/search-movie.component';
+import { TicketBookingComponent } from './ticket-booking/ticket-booking.component';
+import { MoviesDetailsComponent } from './movies-details/movies-details.component';
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    LoginComponent,
+    RegisteruserComponent,
+    MovieslistComponent,
+    ForgotpasswordComponent,
+    SearchMovieComponent,
+    TicketBookingComponent,
+    MoviesDetailsComponent
+  ],
+  imports: [
+    BrowserModule,
+    AppRoutingModule,
+    FormsModule,
+    HttpClientModule,
+    ReactiveFormsModule,
+    NgxPaginationModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+
+--------------------
+authguard.service.spec.ts
+
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
+
+import { AuthguardService } from './authguard.service';
+
+describe('AuthguardService', () => {
+  let service: AuthguardService;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule,RouterTestingModule],
+      providers:[AuthguardService]
+    });
+    service = TestBed.inject(AuthguardService);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+  
+});
+
+
+--------------------
+authguard.service.ts
+
+import { Injectable } from '@angular/core';
+import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from '@angular/router';
+import { Observable } from 'rxjs';
+import { BackendService } from './backend.service';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthguardService implements CanActivate{
+
+  constructor(private routeService:BackendService, private route:Router) { }
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+    if(this.routeService.status==false){
+      alert("You are not eligible to access this page without login")
+        this.route.navigate(["/"])
+    }
+    return true;
+  }
+}
+
+
+--------------------
+backend.service.spec.ts
+
+import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { of } from 'rxjs';
+
+import { BackendService } from './backend.service';
+import { ForgotPassword } from './ForgotPassword';
+import { HttpClient } from '@angular/common/http';
+
+describe('BackendService', () => {
+  let service: BackendService;
+  let httpMock: HttpTestingController;
+  let httpClient: HttpClient;
+  beforeEach(() => {
+    
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers:[BackendService]
+    });
+    service = TestBed.get(BackendService);
+    httpMock = TestBed.inject(HttpTestingController);
+    httpClient = TestBed.inject(HttpClient);
+  });
+  describe('authenticate',()=>{
+    it('should return true or false',()=>{
+  const status=true
+    // spyOn(service,'authenticate').and.returnValue(of(status));
+    service.authenticate('1234','12345').subscribe(res=>{
+      expect(res).toBeTruthy();
+    });
+    const mockRequest = httpMock.expectOne('http://localhost:9093/api/v1.0/moviebooking/login/1234/12345');
+    expect(mockRequest.request.method).toEqual('GET')
+    mockRequest.flush(status)
+  });
+  it('should return user',()=>{
+    const user={loginId!:'1234',email!:'nehal@gmail.com',firstName!:'nehal',lastname!:'ahmad',
+  password!:'12345',confirmPassword!:'12345',contactNumber!:'9876543211'
+};
+  let responce={};
+  //spyOn(service,'addUser').and.returnValue(of(user));
+  service.addUser(user).subscribe(res=>{
+    expect(res).toEqual(user);
+  });
+  const mockRequest = httpMock.expectOne('http://localhost:9093/api/v1.0/moviebooking/register');
+    expect(mockRequest.request.method).toEqual('POST')
+    mockRequest.flush(user)
+});
+it('should return string',()=>{
+ const msg = 'Password changed successfully';let responce='';
+// spyOn(service,'changePassword').and.returnValue(of(msg));
+service.changePassword('nehal123', new ForgotPassword('12345','123456')).subscribe(res=>{
+  expect(res).toEqual(msg);
+});
+const mockRequest = httpMock.expectOne('http://localhost:9093/api/v1.0/moviebooking/nehal123/forgot');
+expect(mockRequest.request.method).toEqual('PUT')
+mockRequest.flush(msg)
+});
+  });
+});
+
+
+--------------------
+backend.service.ts
+
+import { Injectable } from '@angular/core';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
+import { User } from './User';
+import { catchError, Observable } from 'rxjs';
+import { ForgotPassword } from './ForgotPassword';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class BackendService {
+  adminStatus:boolean=false
+  status:boolean=false
+  user!:User;
+  private url='http://localhost:9093/api/v1.0/moviebooking';
+  constructor(private httpClient:HttpClient) { }
+
+  authenticate(loginId:string, password:string):Observable<boolean>{
+     return this.httpClient.get<boolean>(this.url+'/login/'+loginId+'/'+password);
+
+  }
+
+  addUser(user:User):Observable<User>{
+    return this.httpClient.post<User>(this.url+'/register',user);
+  }
+  changePassword(loginId:string,forgotPassword:ForgotPassword){
+    return this.httpClient.put(this.url+"/"+loginId+'/forgot',forgotPassword, { responseType: 'text' });
+  }
+}
+
+
+-----------------------
+CompositeKey.ts
+
+export class CompositeKey{
+    movieName:string=''
+    theatreName:string=''
+}
+
+--------------------------
+ForgotPassword.ts
+
+export class ForgotPassword{
+    constructor(
+   public password:string='',
+    public confirmPassword:string=''){
+
+    }
+}
+
+------------------------------
+movies.service.spec.ts
+
+import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+
+import { MoviesService } from './movies.service';
+import { of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+
+describe('MoviesService', () => {
+  let service: MoviesService;
+  let httpMock: HttpTestingController;
+  let httpClient: HttpClient;
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers:[MoviesService]
+    });
+    service = TestBed.inject(MoviesService);
+    httpMock = TestBed.inject(HttpTestingController);
+    httpClient = TestBed.inject(HttpClient);
+  });
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+  describe('',()=>{
+    it('get all movies',()=>{
+      let response=[{}]
+      const movies =[{key:{movieName:'RRR',theatreName:"PVR"},totalNoOfTickets:250},
+      {key:{movieName:'Avenger',theatreName:"PVR"},totalNoOfTickets:350}];
+      service.getAllMovies().subscribe(data=>{
+        expect(data).toEqual(movies)
+      })
+      const mockRequest = httpMock.expectOne('http://localhost:9093/api/v1.0/moviebooking/all');
+    expect(mockRequest.request.method).toEqual('GET')
+    mockRequest.flush(movies)
+    })
+
+    it('get searched movies',()=>{
+      let response=[{}]
+      const movies =[{key:{movieName:'RRR',theatreName:"PVR"},totalNoOfTickets:250},
+      {key:{movieName:'Avenger',theatreName:"PVR"},totalNoOfTickets:350}];
+      service.getMovies('RRR').subscribe(data=>{
+        expect(data).toEqual(movies)
+      })
+      const mockRequest = httpMock.expectOne('http://localhost:9093/api/v1.0/moviebooking/movies/search/RRR');
+    expect(mockRequest.request.method).toEqual('GET')
+    mockRequest.flush(movies)
+    })
+
+    it('delete movie',()=>{
+      const movie ={key:{movieName:'RRR',theatreName:"PVR"},totalNoOfTickets:250};
+      service.deleteMovie('RRR','PVR').subscribe(data=>{
+        expect(data).toEqual("movie deleted successfully")
+      })
+      const mockRequest = httpMock.expectOne('http://localhost:9093/api/v1.0/moviebooking/RRR/PVR/delete');
+    expect(mockRequest.request.method).toEqual('DELETE')
+    })
+
+    it('movie details',()=>{
+      const movie ={key:{movieName:'RRR',theatreName:"PVR"},totalNoOfTickets:250};
+      service.movieDetails('RRR','PVR').subscribe(data=>{
+        expect(data).toEqual(0)
+      })
+      const mockRequest = httpMock.expectOne('http://localhost:9093/api/v1.0/moviebooking/bookedmovies/RRR/PVR');
+    expect(mockRequest.request.method).toEqual('GET')
+    })
+  })
+});
+
+
+------------------------
+movies.service.ts
+
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { Movies } from './Movies';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class MoviesService {
+  
+  movie!:Movies
+  movieName:string=''
+  private url='http://localhost:9093/api/v1.0/moviebooking';
+  constructor(private httpClient:HttpClient) { }
+
+  getAllMovies():Observable<Movies[]>{
+    return this.httpClient.get<Movies[]>(this.url+'/all')
+
+  }
+  getMovies(movieName:string):Observable<Movies[]>{
+    return this.httpClient.get<Movies[]>(this.url+'/movies/search/'+movieName)
+  }
+
+  deleteMovie(movieName:string, theatreName:string){
+    return this.httpClient.delete(this.url+'/'+movieName+'/'+theatreName+'/delete',{ responseType: 'text' })
+  }
+
+  movieDetails(movieName:string, theatreName:string):Observable<number>{
+    return this.httpClient.get<number>(this.url+'/bookedmovies/'+movieName+'/'+theatreName)
+  }
+}
+
+
+------------------------
+Movies.ts
+
+
+import { CompositeKey } from "./CompositeKey";
+
+export class Movies{
+    key!:CompositeKey
+    totalNoOfTickets!:number
+}
+
+--------------------------
+ticket-booking.service.spec.ts
+
+import { HttpClient } from '@angular/common/http';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+
+import { TicketBookingService } from './ticket-booking.service';
+import { Tickets } from './Tickets';
+
+describe('TicketBookingService', () => {
+  let service: TicketBookingService;
+  let httpMock: HttpTestingController;
+  let httpClient: HttpClient;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers:[TicketBookingService]
+    });
+    service = TestBed.inject(TicketBookingService);
+    httpMock = TestBed.inject(HttpTestingController);
+    httpClient = TestBed.inject(HttpClient);
+  });
+
+  it('should be created', () => {
+    expect(service).toBeTruthy();
+  });
+  describe('book ticket',()=>{
+    it('book ticket',()=>{
+      //const ticket = {movie:{key:{movieName:'RRR',theatreName:"PVR"},totalNoOfTickets:250},
+    //noOfTickets:2,seatNumber:[1,2]}
+    service.bookTickets(new Tickets({key:{movieName:'RRR',theatreName:"PVR"},totalNoOfTickets:250},
+    2,['1','2'])).subscribe(data=>{
+      expect(data).toEqual('tickets booked')
+    })
+    const mockRequest = httpMock.expectOne('http://localhost:9093/api/v1.0/moviebooking/book');
+    expect(mockRequest.request.method).toEqual('POST')
+    })
+  })
+});
+
+
+----------------------------
+ticket-booking.service.ts
+
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { Tickets } from './Tickets';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class TicketBookingService {
+
+  private url='http://localhost:9093/api/v1.0/moviebooking';
+  constructor(private httpClient:HttpClient) { }
+  bookTickets(ticket:Tickets){
+    return this.httpClient.post(this.url+'/book',ticket,{ responseType: 'text' })
+  }
+}
+
+
+---------------------------
+Tickets.ts
+
+import { Movies } from "./Movies";
+
+export class Tickets{
+    constructor(
+   public movie:Movies,
+    public noOfTickets:number,
+   public seatNumber:string[]=[]){
+
+    }
+}
+
+-------------------------------
+User.ts
+
+export class User{
+    loginId!:string
+    email!:string
+    firstName!:string
+    lastname!:string
+    password!:string
+    confirmPassword!:string
+    contactNumber!:string
+}
+
+
+---------------------------
+index.html
+
+<!doctype html>
+<html lang="en">
+<head>
+  <head>
+    <meta charset="utf-8">
+    <title>MovieBookingApp</title>
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  </head>
+</head>
+<body>
+  <app-root></app-root>  
+</body>
+</html>
+
+
+--------------------
+main.ts
+
+import { enableProdMode } from '@angular/core';
+import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+
+import { AppModule } from './app/app.module';
+import { environment } from './environments/environment';
+
+if (environment.production) {
+  enableProdMode();
+}
+
+platformBrowserDynamic().bootstrapModule(AppModule)
+  .catch(err => console.error(err));
+
+
+-----------------------
+polyfills.ts
+
+
+/**
+ * This file includes polyfills needed by Angular and is loaded before the app.
+ * You can add your own extra polyfills to this file.
+ *
+ * This file is divided into 2 sections:
+ *   1. Browser polyfills. These are applied before loading ZoneJS and are sorted by browsers.
+ *   2. Application imports. Files imported after ZoneJS that should be loaded before your main
+ *      file.
+ *
+ * The current setup is for so-called "evergreen" browsers; the last versions of browsers that
+ * automatically update themselves. This includes recent versions of Safari, Chrome (including
+ * Opera), Edge on the desktop, and iOS and Chrome on mobile.
+ *
+ * Learn more in https://angular.io/guide/browser-support
+ */
+
+/***************************************************************************************************
+ * BROWSER POLYFILLS
+ */
+
+/**
+ * By default, zone.js will patch all possible macroTask and DomEvents
+ * user can disable parts of macroTask/DomEvents patch by setting following flags
+ * because those flags need to be set before `zone.js` being loaded, and webpack
+ * will put import in the top of bundle, so user need to create a separate file
+ * in this directory (for example: zone-flags.ts), and put the following flags
+ * into that file, and then add the following code before importing zone.js.
+ * import './zone-flags';
+ *
+ * The flags allowed in zone-flags.ts are listed here.
+ *
+ * The following flags will work for all browsers.
+ *
+ * (window as any).__Zone_disable_requestAnimationFrame = true; // disable patch requestAnimationFrame
+ * (window as any).__Zone_disable_on_property = true; // disable patch onProperty such as onclick
+ * (window as any).__zone_symbol__UNPATCHED_EVENTS = ['scroll', 'mousemove']; // disable patch specified eventNames
+ *
+ *  in IE/Edge developer tools, the addEventListener will also be wrapped by zone.js
+ *  with the following flag, it will bypass `zone.js` patch for IE/Edge
+ *
+ *  (window as any).__Zone_enable_cross_context_check = true;
+ *
+ */
+
+/***************************************************************************************************
+ * Zone JS is required by default for Angular itself.
+ */
+import 'zone.js';  // Included with Angular CLI.
+
+
+/***************************************************************************************************
+ * APPLICATION IMPORTS
+ */
+
+
+-----------------------------
+styles.css
+
+/* You can add global styles to this file, and also import other style files */
+@import "~bootstrap/dist/css/bootstrap.css"
+
+------------------------------
+test.ts
+
+// This file is required by karma.conf.js and loads recursively all the .spec and framework files
+
+import 'zone.js/testing';
+import { getTestBed } from '@angular/core/testing';
+import {
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting
+} from '@angular/platform-browser-dynamic/testing';
+
+declare const require: {
+  context(path: string, deep?: boolean, filter?: RegExp): {
+    <T>(id: string): T;
+    keys(): string[];
+  };
+};
+
+// First, initialize the Angular testing environment.
+getTestBed().initTestEnvironment(
+  BrowserDynamicTestingModule,
+  platformBrowserDynamicTesting(),
+);
+
+// Then we find all the tests.
+const context = require.context('./', true, /\.spec\.ts$/);
+// And load the modules.
+context.keys().map(context);
